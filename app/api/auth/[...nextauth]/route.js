@@ -18,10 +18,13 @@ const handler = NextAuth({
       if (user) {
         token.id = user.id;
       }
+      console.log("JWT Callback - Token:", token); // Log token
       return token;
     },
 
     async session({ session, token }) {
+      console.log("Session Callback - Token:", token); // Log token
+  console.log("Session Callback - Session:", session); // Log session
       if (token?.id) {
         session.user.id = token.id;
         const isAdmin = await Admin.findOne({
@@ -60,6 +63,8 @@ const handler = NextAuth({
   secret: process.env.NEXTAUTH_SECRET,
   session: {
     strategy: "jwt",
+    maxAge: 30 * 24 * 60 * 60, // 30 days
+    updateAge: 24 * 60 * 60, // 24 hours
   },
   jwt: {
     secret: process.env.NEXTAUTH_SECRET,
