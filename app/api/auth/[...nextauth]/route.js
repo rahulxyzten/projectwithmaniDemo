@@ -28,14 +28,12 @@ const handler = NextAuth({
           email: session.user.email,
         });
 
-        if (sessionUser) {
-          session.user.id = sessionUser._id.toString();
-          const isAdmin = await Admin.findOne({
-            email: session.user.email,
-          });
+        session.user.id = sessionUser._id.toString();
+        const isAdmin = await Admin.findOne({
+          email: session.user.email,
+        });
 
-          session.user.isAdmin = !!isAdmin;
-        }
+        session.user.isAdmin = !!isAdmin;
 
         return session;
       } catch (error) {
@@ -68,7 +66,14 @@ const handler = NextAuth({
         return false;
       }
     },
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
   },
+  secret: process.env.NEXTAUTH_SECRET,
 });
 
 export { handler as GET, handler as POST };
