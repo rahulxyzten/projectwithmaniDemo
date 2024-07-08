@@ -23,16 +23,21 @@ const handler = NextAuth({
     },
 
     async session({ session, token }) {
-      console.log("Session Callback - Token:", token); // Log token
-  console.log("Session Callback - Session:", session); // Log session
-      if (token?.id) {
-        session.user.id = token.id;
-        const isAdmin = await Admin.findOne({
-          email: session.user.email,
-        });
-        session.user.isAdmin = !!isAdmin;
+      try {
+        console.log("Session Callback - Token:", token); // Log token
+        console.log("Session Callback - Session:", session); // Log session
+        if (token?.id) {
+          session.user.id = token.id;
+          const isAdmin = await Admin.findOne({
+            email: session.user.email,
+          });
+          session.user.isAdmin = !!isAdmin;
+        }
+        return session;
+      } catch (error) {
+        console.error("Error in session callback:", error);
+        return session;
       }
-      return session;
     },
 
     async signIn({ profile }) {
