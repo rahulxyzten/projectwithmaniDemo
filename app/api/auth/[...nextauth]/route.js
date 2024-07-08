@@ -6,13 +6,6 @@ import Admin from "@/models/admin";
 import { connectToDB } from "@/utils/database";
 
 const handler = NextAuth({
-  session: {
-    jwt: true,
-  },
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
-  },
-
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
@@ -21,25 +14,22 @@ const handler = NextAuth({
   ],
 
   callbacks: {
-    async session({ session }) {
-      try {
-        await connectToDB();
-        const sessionUser = await User.findOne({
-          email: session.user.email,
-        });
+    async jwt({ token, user }) {
+      if (user) {
+        token.id = user.id;
+      }
+      return token;
+    },
 
-        session.user.id = sessionUser._id.toString();
+    async session({ session, token }) {
+      if (token?.id) {
+        session.user.id = token.id;
         const isAdmin = await Admin.findOne({
           email: session.user.email,
         });
-
         session.user.isAdmin = !!isAdmin;
-
-        return session;
-      } catch (error) {
-        console.error("Error in session callback:", error);
-        return session;
       }
+      return session;
     },
 
     async signIn({ profile }) {
@@ -66,14 +56,17 @@ const handler = NextAuth({
         return false;
       }
     },
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      return token;
-    },
   },
   secret: process.env.NEXTAUTH_SECRET,
+  session: {
+    strategy: "jwt",
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET,
+  },
+  pages: {
+    signIn: "/login", // Custom sign in page
+  },
 });
 
 export { handler as GET, handler as POST };
