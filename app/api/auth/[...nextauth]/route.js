@@ -6,6 +6,13 @@ import Admin from "@/models/admin";
 import { connectToDB } from "@/utils/database";
 
 const handler = NextAuth({
+  session: {
+    jwt: true,
+  },
+  jwt: {
+    secret: process.env.NEXTAUTH_SECRET,
+  },
+
   providers: [
     GoogleProvider({
       clientId: process.env.GOOGLE_ID,
@@ -14,26 +21,23 @@ const handler = NextAuth({
   ],
 
   callbacks: {
-    async jwt({ token, user }) {
-      if (user) {
-        token.id = user.id;
-      }
-      console.log("JWT Callback - Token:", token); // Log token
-      return token;
-    },
-
-    async session({ session, token }) {
+    async session({ session }) {
       try {
-        console.log("Session Callback - Token:", token); // Log token
-        console.log("Session Callback - Session:", session); // Log session
-        if (token?.id) {
-          session.user.id = token.id;
+        await connectToDB();
+        const sessionUser = await User.findOne({
+          email: session.user.email,
+        });
+
+        if (sessionUser) {
+          session.user.id = sessionUser._id.toString();
           const isAdmin = await Admin.findOne({
             email: session.user.email,
           });
+
           session.user.isAdmin = !!isAdmin;
         }
-        return session;
+
+        return Promise.resolve(session);
       } catch (error) {
         console.error("Error in session callback:", error);
         return session;
@@ -64,18 +68,6 @@ const handler = NextAuth({
         return false;
       }
     },
-  },
-  secret: process.env.NEXTAUTH_SECRET,
-  session: {
-    strategy: "jwt",
-    maxAge: 30 * 24 * 60 * 60, // 30 days
-    updateAge: 24 * 60 * 60, // 24 hours
-  },
-  jwt: {
-    secret: process.env.NEXTAUTH_SECRET,
-  },
-  pages: {
-    signIn: "/login", // Custom sign in page
   },
 });
 
