@@ -7,15 +7,13 @@ const nextConfig = {
   images: {
     domains: ["res.cloudinary.com", "lh3.googleusercontent.com"],
   },
-  webpack: (config, { isServer }) => {
-    if (!isServer) {
-      config.resolve.fallback = {
-        ...config.resolve.fallback,
-        fs: false,
-      };
-    }
+  webpack(config) {
+    config.experiments = {
+      ...config.experiments,
+      topLevelAwait: true,
+    };
     return config;
   },
 };
 
-export default nextConfig;
+module.exports = nextConfig;
