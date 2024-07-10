@@ -22,7 +22,10 @@ const PageContent = () => {
 
   const fetchProjects = async () => {
     const response = await fetch("api/gallery", {
-      cache: "no-cache",
+      headers: {
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+      },
     });
     const data = await response.json();
     console.log(data);

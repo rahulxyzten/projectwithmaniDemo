@@ -81,7 +81,7 @@ const page = () => {
           });
 
           router.push(`/gallery?${params.toString()}`);
-          router.refresh();
+          router.refresh(); // Force a re-fetch of the data
         }
       }
     } catch (error) {
