@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import GalleryCard from "@/components/GalleryCard";
 
@@ -15,46 +15,22 @@ interface Post {
 }
 
 const PageContent = () => {
-  const router = useRouter();
   const searchParams = useSearchParams();
   const [posts, setPosts] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(8);
 
   useEffect(() => {
     const fetchProjects = async () => {
-      const response = await fetch("api/gallery");
+      const response = await fetch("api/gallery", {
+        cache: "no-cache",
+      });
       const data = await response.json();
       console.log(data);
       setPosts(data.reverse());
     };
 
     fetchProjects();
-  }, []);
-
-  useEffect(() => {
-    const newPostTitle = searchParams.get("newPostTitle") || "";
-    const newPostUsername = searchParams.get("newPostUsername") || "";
-    const newPostImageUrl = searchParams.get("newPostImageUrl") || "";
-    const newPostImagePublicId = searchParams.get("newPostImagePublicId") || "";
-
-    if (
-      newPostTitle &&
-      newPostUsername &&
-      newPostImageUrl &&
-      newPostImagePublicId
-    ) {
-      const newPost: Post = {
-        title: newPostTitle,
-        username: newPostUsername,
-        cover: {
-          url: newPostImageUrl,
-          public_id: newPostImagePublicId,
-        },
-      };
-
-      setPosts((prevPosts) => [newPost, ...prevPosts]);
-    }
-  }, [searchParams]);
+  }, [searchParams.get("refresh")]);
 
   const handleLoadMore = () => {
     setVisibleCount((prevCount) => prevCount + 8);

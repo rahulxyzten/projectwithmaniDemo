@@ -73,14 +73,7 @@ const page = () => {
         });
 
         if (response.ok) {
-          const params = new URLSearchParams({
-            newPostTitle: post.title,
-            newPostUsername: post.username,
-            newPostImageUrl: imageUrl,
-            newPostImagePublicId: imagePublicId,
-          });
-
-          router.push(`/gallery?${params.toString()}`);
+          router.push(`/gallery?refresh=true`);
         }
       }
     } catch (error) {
