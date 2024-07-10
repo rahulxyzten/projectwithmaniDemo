@@ -21,6 +21,6 @@
       "@/*": ["./*"]
     }
   },
-  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/Editor.jsx", "app/(root)/create-project/page.tsx", "components/Form.tsx"],
+  "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts", "components/Editor.jsx", "app/(root)/create-project/page.tsx", "components/Form.tsx", "components/Provider.jsx", "app/layout.jsx"],
   "exclude": ["node_modules"]
 }
