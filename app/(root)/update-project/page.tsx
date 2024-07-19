@@ -2,43 +2,74 @@
 
 import React, { useState, useEffect, FormEvent, Suspense } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Form from "@/components/Form";
 
 const PageContent = () => {
   const router = useRouter();
+  const { data: session } = useSession();
   const searchParams = useSearchParams();
   const projectId = searchParams.get("id");
 
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
   const [project, setProject] = useState({
     title: "",
     summary: "",
     category: "",
-    projectPrice: 0,
     content: "",
+    projectPrice: 0,
+    projectDiscount: 0,
+    razorpaylink: "",
     thumbnail: {} as File,
     youtubelink: "",
     sourceCodelink: "",
   });
 
   useEffect(() => {
+    // Redirect if not an admin
+    if (!session?.user?.isAdmin) {
+      router.push("/");
+      return;
+    }
+
     const getProjectDetails = async () => {
-      const response = await fetch(`/api/project/${projectId}`);
-      const data = await response.json();
-      setProject({
-        title: data.title,
-        summary: data.summary,
-        category: data.category,
-        projectPrice: data.projectPrice,
-        content: data.content,
-        thumbnail: {} as File,
-        youtubelink: data.youtubelink,
-        sourceCodelink: data.sourceCodelink,
-      });
+      try {
+        const response = await fetch(`/api/project/${projectId}`);
+        const data = await response.json();
+        const savedProject = JSON.parse(
+          localStorage.getItem(`project_${projectId}`) || "{}"
+        );
+
+        setProject({
+          title: savedProject.title || data.title,
+          summary: savedProject.summary || data.summary,
+          category: savedProject.category || data.category,
+          content: savedProject.content || data.content,
+          projectPrice: savedProject.projectPrice || data.projectPrice,
+          projectDiscount: savedProject.projectDiscount || data.projectDiscount,
+          razorpaylink: savedProject.razorpaylink || data.razorpaylink,
+          thumbnail: {} as File,
+          youtubelink: savedProject.youtubelink || data.youtubelink,
+          sourceCodelink: savedProject.sourceCodelink || data.sourceCodelink,
+        });
+        setLoading(false); // Set loading to false after data is set
+      } catch (error) {
+        console.error(error);
+        setLoading(false); // Set loading to false in case of an error
+      }
     };
 
-    if (projectId) getProjectDetails();
-  }, [projectId]);
+    if (projectId) {
+      getProjectDetails();
+    }
+  }, [projectId, session, router]);
+
+  useEffect(() => {
+    if (projectId) {
+      localStorage.setItem(`project_${projectId}`, JSON.stringify(project));
+    }
+  }, [project, projectId]);
 
   const updateProject = async (e: FormEvent) => {
     e.preventDefault();
@@ -81,9 +112,11 @@ const PageContent = () => {
         body: JSON.stringify({
           title: project.title,
           summary: project.summary,
-          content: project.content,
           category: project.category,
+          content: project.content,
           projectPrice: project.projectPrice,
+          projectDiscount: project.projectDiscount,
+          razorpaylink: project.razorpaylink,
           thumbnail: {
             public_id: imagePublicId,
             url: imageUrl,
@@ -95,13 +128,18 @@ const PageContent = () => {
 
       if (response.ok) {
         router.push(`/blog?id=${projectId}`);
+        localStorage.removeItem(`project_${projectId}`);
       }
     } catch (error) {
-      console.log(error);
+      console.log("Update project error:", error);
     } finally {
       setSubmitting(false);
     }
   };
+
+  if (loading) {
+    return <div>Loading...</div>; // Render a loading state while fetching data
+  }
 
   return (
     <Form

@@ -1,15 +1,18 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import Form from "@/components/Form";
 
 interface Project {
   title: string;
   summary: string;
   category: string;
-  projectPrice: number;
   content: string;
+  projectPrice: number;
+  projectDiscount: number;
+  razorpaylink: string;
   thumbnail: File;
   youtubelink: string;
   sourceCodelink: string;
@@ -25,18 +28,29 @@ interface Props {
 
 const page = () => {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [submitting, setSubmitting] = useState(false);
   const [project, setProject] = useState({
     title: "",
     summary: "",
     category: "",
-    projectPrice: 0,
     content: "",
+    projectPrice: 0,
+    projectDiscount: 0,
+    razorpaylink: "",
     thumbnail: {} as File,
     youtubelink: "",
     sourceCodelink: "",
   });
+
+  useEffect(() => {
+    // Redirect if not an admin
+    if (!session?.user?.isAdmin) {
+      router.push("/");
+      return;
+    }
+  }, [session, router]);
 
   const createProject = async (e: FormEvent) => {
     e.preventDefault();
@@ -75,9 +89,11 @@ const page = () => {
           body: JSON.stringify({
             title: project.title,
             summary: project.summary,
-            content: project.content,
             category: project.category,
+            content: project.content,
             projectPrice: project.projectPrice,
+            projectDiscount: project.projectDiscount,
+            razorpaylink: project.razorpaylink,
             thumbnail: {
               public_id: imagePublicId,
               url: imageUrl,

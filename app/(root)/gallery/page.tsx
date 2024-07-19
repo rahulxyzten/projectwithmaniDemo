@@ -1,22 +1,12 @@
 "use client";
 
-import { useEffect, useState, Suspense } from "react";
-import { useRouter, useSearchParams } from "next/navigation";
+import { useEffect, useState } from "react";
 import Link from "next/link";
 import GalleryCard from "@/components/GalleryCard";
+import { motion } from "framer-motion";
+import { toast } from "react-toastify";
 
-interface Post {
-  title: string;
-  username: string;
-  cover: {
-    url: string;
-    public_id: string;
-  };
-}
-
-const PageContent = () => {
-  const router = useRouter();
-  const searchParams = useSearchParams();
+const page = () => {
   const [posts, setPosts] = useState<any[]>([]);
   const [visibleCount, setVisibleCount] = useState(8);
 
@@ -28,7 +18,6 @@ const PageContent = () => {
       },
     });
     const data = await response.json();
-    console.log(data);
     setPosts(data.reverse());
   };
 
@@ -36,33 +25,39 @@ const PageContent = () => {
     fetchProjects();
   }, []);
 
-  useEffect(() => {
-    const newPostTitle = searchParams.get("newPostTitle") || "";
-    const newPostUsername = searchParams.get("newPostUsername") || "";
-    const newPostImageUrl = searchParams.get("newPostImageUrl") || "";
-    const newPostImagePublicId = searchParams.get("newPostImagePublicId") || "";
-
-    if (
-      newPostTitle &&
-      newPostUsername &&
-      newPostImageUrl &&
-      newPostImagePublicId
-    ) {
-      const newPost: Post = {
-        title: newPostTitle,
-        username: newPostUsername,
-        cover: {
-          url: newPostImageUrl,
-          public_id: newPostImagePublicId,
-        },
-      };
-
-      setPosts((prevPosts) => [newPost, ...prevPosts]);
-    }
-  }, [searchParams]);
-
   const handleLoadMore = () => {
     setVisibleCount((prevCount) => prevCount + 8);
+  };
+
+  const handlePostDelete = async (id: string) => {
+    const hasConfirmed = confirm("Are you sure you want to delete this post");
+
+    if (hasConfirmed) {
+      try {
+        const response = await fetch(`/api/gallery/${id.toString()}`, {
+          method: "DELETE",
+        });
+
+        if (response.ok) {
+          toast("😔 Post deleted successfully");
+          const filteredPosts = posts.filter((p) => p._id !== id);
+          setPosts(filteredPosts);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+    }
+  };
+
+  const cardVariants = {
+    hidden: { opacity: 0, y: 50 },
+    visible: (i: number) => ({
+      opacity: 1,
+      y: 0,
+      transition: {
+        delay: i * 0.2,
+      },
+    }),
   };
 
   return (
@@ -78,12 +73,22 @@ const PageContent = () => {
         </Link>
         <div className="flex flex-wrap justify-center mt-4 gap-4">
           {posts.slice(0, visibleCount).map((post, index) => (
-            <GalleryCard
-              key={index}
-              title={post.title}
-              username={post.username}
-              image={post.cover.url}
-            />
+            <motion.div
+              key={post._id}
+              custom={index}
+              initial="hidden"
+              animate="visible"
+              variants={cardVariants}
+            >
+              <GalleryCard
+                key={index}
+                id={post._id}
+                title={post.title}
+                username={post.username}
+                image={post.cover.url}
+                handlePostDelete={() => handlePostDelete(post._id)}
+              />
+            </motion.div>
           ))}
         </div>
         {visibleCount < posts.length && (
@@ -96,14 +101,6 @@ const PageContent = () => {
         )}
       </div>
     </section>
-  );
-};
-
-const page = () => {
-  return (
-    <Suspense fallback={<div>Loading...</div>}>
-      <PageContent />
-    </Suspense>
   );
 };
 

@@ -58,6 +58,7 @@ module.exports = {
       },
       backgroundImage: {
         banner: "url('/banner.svg')",
+        'mobile-banner': "url('/mobile-banner.svg')",
       },
       keyframes: {
         "accordion-down": {

@@ -9,17 +9,25 @@ const ProjectSchema = new Schema({
     type: String,
     required: [true, "Summary is required."],
   },
-  content: {
-    type: String,
-    required: [true, "Content is required."],
-  },
   category: {
     type: String,
     required: [true, "Category is required."],
   },
+  content: {
+    type: String,
+    required: [true, "Content is required."],
+  },
   projectPrice: {
     type: String,
-    required: [true, "Category is required."],
+    required: [true, "Project price is required."],
+  },
+  projectDiscount: {
+    type: String,
+    required: [true, "Project discount is required."],
+  },
+  razorpaylink: {
+    type: String,
+    required: [true, "Razorpay link is required."],
   },
   thumbnail: {
     public_id: {

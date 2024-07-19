@@ -1,20 +1,28 @@
 "use client";
 import React, { useState, useEffect } from "react";
-import dynamic from 'next/dynamic';
+import dynamic from "next/dynamic";
 import "react-quill/dist/quill.snow.css";
 import { Input } from "@nextui-org/react";
 import { Select, SelectItem } from "@nextui-org/react";
-const Editor = dynamic(() => import('./Editor'), { ssr: false });
+import { motion } from "framer-motion";
+const Editor = dynamic(() => import("./Editor"), { ssr: false });
 
 interface Project {
   title: string;
   summary: string;
   category: string;
-  projectPrice: number;
   content: string;
+  projectPrice: number;
+  projectDiscount: number;
+  razorpaylink: string;
   thumbnail: File;
   youtubelink: string;
   sourceCodelink: string;
+}
+
+interface Category {
+  _id: string;
+  categoryName: string;
 }
 
 interface Props {
@@ -32,15 +40,26 @@ const Form = ({
   submitting,
   handleSubmit,
 }: Props) => {
+  const [categoryNames, setCategoryNames] = useState<string[]>([]);
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
-  const items = [
-    "arduino",
-    "electronics",
-    "esp8266",
-    "raspberrypi",
-    "multirotor",
-    "esp32",
-  ];
+
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        // Fetch categories name
+        const categoriesResponse = await fetch("/api/category");
+        const categoriesData = await categoriesResponse.json();
+        const categoryNamesList = categoriesData.map(
+          (category: Category) => category.categoryName
+        );
+        setCategoryNames(categoryNamesList);
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
 
   useEffect(() => {
     if (project.category) {
@@ -55,6 +74,11 @@ const Form = ({
     }
   };
 
+  const formVariants = {
+    hidden: { opacity: 0, y: 100 },
+    visible: { opacity: 1, y: 0 },
+  };
+
   return (
     <form
       className="flex-center paddings mx-auto max-w-screen-xl flex-col"
@@ -62,7 +86,13 @@ const Form = ({
     >
       <div className="nav-padding w-full">
         <h1 className="mb-7 heading3 text-white-800">{type} your project ✨</h1>
-        <div className="shadow-sm dark:border-zinc-600 rounded-[10px] border-2 border-black-400 p-5">
+        <motion.div
+          className="shadow-sm dark:border-zinc-600 rounded-[10px] border-2 border-black-400 p-5"
+          initial="hidden"
+          animate="visible"
+          variants={formVariants}
+          transition={{ duration: 0.5 }}
+        >
           <Input
             type="text"
             className="mb-5 "
@@ -71,6 +101,7 @@ const Form = ({
             value={project.title}
             onChange={(e) => setProject({ ...project, title: e.target.value })}
           />
+
           <Input
             type="text"
             className="mb-5 "
@@ -81,26 +112,36 @@ const Form = ({
               setProject({ ...project, summary: e.target.value })
             }
           />
-          <div className="flex flex-col md:flex-row justify-start md:gap-20">
-            <Select
-              variant="underlined"
-              label="Select an category :"
-              className="max-w-xs mb-5 text-white"
-              value={project.category}
-              selectedKeys={new Set(selectedKeys)}
-              onSelectionChange={(keys) =>
-                setSelectedKeys(Array.from(keys) as string[])
-              }
-              onChange={(e) =>
-                setProject({ ...project, category: e.target.value })
-              }
-            >
-              {items.map((item) => (
-                <SelectItem className="text-white" key={item} value={item}>
-                  {item}
-                </SelectItem>
-              ))}
-            </Select>
+
+          <Select
+            variant="underlined"
+            label="Select an category :"
+            className="max-w-xs h-full mb-7 text-white"
+            value={project.category}
+            selectedKeys={new Set(selectedKeys)}
+            onSelectionChange={(keys) =>
+              setSelectedKeys(Array.from(keys) as string[])
+            }
+            onChange={(e) =>
+              setProject({ ...project, category: e.target.value })
+            }
+          >
+            {categoryNames.map((item) => (
+              <SelectItem className="text-white" key={item} value={item}>
+                {item}
+              </SelectItem>
+            ))}
+          </Select>
+
+          <p className="mb-2 ml-1 text-sm text-gray-200">Content :</p>
+          <Editor
+            value={project.content}
+            onChange={(value: string) =>
+              setProject({ ...project, content: value })
+            }
+          />
+
+          <div className="mt-7 flex flex-col md:flex-row justify-start md:gap-20">
             <Input
               type="number"
               className="mb-5 max-w-xs"
@@ -114,17 +155,33 @@ const Form = ({
                 })
               }
             />
+            <Input
+              type="number"
+              className="mb-5 max-w-xs"
+              variant="underlined"
+              label="Price discount :"
+              value={project.projectDiscount.toString()}
+              onChange={(e) =>
+                setProject({
+                  ...project,
+                  projectDiscount: parseFloat(e.target.value),
+                })
+              }
+            />
           </div>
 
-          <p className="mb-2 ml-1 text-sm text-gray-200">Content :</p>
-          <Editor
-            value={project.content}
-            onChange={(value: string) =>
-              setProject({ ...project, content: value })
+          <Input
+            type="url"
+            className="mb-5 "
+            variant="underlined"
+            label="Razorpay link :"
+            value={project.razorpaylink}
+            onChange={(e) =>
+              setProject({ ...project, razorpaylink: e.target.value })
             }
           />
 
-          <p className="mt-5 mb-2 ml-1 text-sm text-gray-200">
+          <p className="mt-7 mb-2 ml-1 text-sm text-gray-200">
             Youtube thumbnail :
           </p>
           <Input
@@ -162,9 +219,9 @@ const Form = ({
             type="submit"
             disabled={submitting}
           >
-            {submitting ? `{type}...` : type}
+            {submitting ? `{Updating}...` : type}
           </button>
-        </div>
+        </motion.div>
       </div>
     </form>
   );

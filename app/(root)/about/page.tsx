@@ -4,17 +4,17 @@ import { FaTwitter, FaLinkedin, FaYoutube, FaGithub } from "react-icons/fa";
 
 const page = () => {
   return (
-    <section className="pt-[150px] flex w-full flex-col items-center">
-      <h1 className="text-4xl font-bold text-center text-white py-5">
-        About Us
+    <section className="pt-[130px] flex w-full flex-col items-center">
+      <h1 className="text-4xl font-bold text-center text-white-800 pb-7">
+        About us 
       </h1>
 
       <div className="flex flex-col items-center ">
         <Image
           src="/mani.jpg"
           className="rounded-full !bg-transparent object-cover transition-transform duration-500 ease-in-out transform hover:scale-105"
-          width={400}
-          height={400}
+          width={350}
+          height={350}
           alt="Kotini Mani Kanta"
         />
         <h2 className="text-2xl font-semibold text-center text-gradient_blue-purple mt-4">

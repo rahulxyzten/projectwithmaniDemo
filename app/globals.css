@@ -264,18 +264,28 @@
 
 /* blog page content  */
 .blog-content h1 {
-  font-size: 2em;
-  margin-bottom: 0.5em;
+  color: rgb(208 223 255);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 0.2em;
 }
 
 .blog-content h2 {
-  font-size: 1.75em;
-  margin-bottom: 0.5em;
+  color: rgb(208 223 255);
+  font-size: 1.25rem;
+  font-weight: 600;
+  line-height: 1.25;
+  margin-bottom: 0.2em;
 }
 
-.blog-content h3 {
-  font-size: 1.5em;
-  margin-bottom: 0.5em;
+@media (min-width: 640px) {
+  .blog-content h1 {
+    font-size: 1.875rem;
+  }
+  .blog-content h2 {
+    font-size: 1.875rem;
+  }
 }
 
 .blog-content ol {
@@ -284,5 +294,125 @@
 }
 
 .blog-content ol li {
-  margin-bottom: 0.5em;
+  margin-bottom: 0.2em;
+}
+
+.blog-content ul {
+  list-style-type: circle;
+  margin-left: 2em;
+}
+
+.blog-content ul li {
+  margin-bottom: 0.2em;
+}
+
+.blog-content img {
+  margin: auto;
+  max-width: 100%;
+  height: auto;
+  object-fit: cover;
+  border-radius: 0.25rem;
+  aspect-ratio: 1200/630;
+}
+
+.blog-content a {
+  background-color: var(--ricos-custom-p-background-color, unset);
+  color: var(--ricos-custom-link-color, var(--ricos-action-color, #116dff));
+  text-decoration: underline;
+}
+
+.blog-content .ql-syntax {
+  height: 400px;
+  margin-top: 10px;
+  margin-left: 5px;
+  margin-right: 5px;
+  background-color: #0f172a;
+  padding: 10px;
+  border-radius: 5px;
+  border: 0.5px solid #eaecec;
+  overflow: hidden;
+  overflow: auto;
+  white-space: pre;
+}
+
+@media (min-width: 769px) {
+  .blog-content .ql-syntax {
+    margin-left: 35px;
+    margin-right: 35px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .blog-content .ql-syntax {
+    margin-left: 100px;
+    margin-right: 100px;
+  }
+}
+
+.custom-select option {
+  padding-left: 7px;
+  font-size: 0.875rem;
+}
+
+/* Gallery page delete button */
+.delete-button {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  background-color: rgb(20, 20, 20);
+  border: none;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0px 0px 20px rgba(0, 0, 0, 0.164);
+  cursor: pointer;
+  transition-duration: 0.3s;
+  overflow: hidden;
+  position: relative;
+}
+
+.delete-svgIcon {
+  width: 15px;
+  transition-duration: 0.3s;
+}
+
+.delete-svgIcon path {
+  fill: white;
+}
+
+.delete-button:hover {
+  width: 90px;
+  border-radius: 50px;
+  transition-duration: 0.3s;
+  background: linear-gradient(90deg, #854cff 0%, #b573f8 100%);
+  align-items: center;
+}
+
+.delete-button:hover .delete-svgIcon {
+  width: 20px;
+  transition-duration: 0.3s;
+  transform: translateY(60%);
+  -webkit-transform: rotate(360deg);
+  -moz-transform: rotate(360deg);
+  -o-transform: rotate(360deg);
+  -ms-transform: rotate(360deg);
+  transform: rotate(360deg);
+}
+
+.delete-button::before {
+  display: none;
+  content: "Delete";
+  color: white;
+  transition-duration: 0.3s;
+  font-size: 2px;
+}
+
+.delete-button:hover::before {
+  display: block;
+  padding-right: 10px;
+  font-size: 13px;
+  opacity: 1;
+  transform: translateY(0px);
+  transition-duration: 0.3s;
 }

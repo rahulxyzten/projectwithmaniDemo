@@ -21,9 +21,11 @@ export const PATCH = async (req, { params }) => {
   const {
     title,
     summary,
-    content,
     category,
+    content,
     projectPrice,
+    projectDiscount,
+    razorpaylink,
     thumbnail,
     youtubelink,
     sourceCodelink,
@@ -39,9 +41,11 @@ export const PATCH = async (req, { params }) => {
     } else {
       existingProject.title = title;
       existingProject.summary = summary;
-      existingProject.content = content;
       existingProject.category = category;
+      existingProject.content = content;
       existingProject.projectPrice = projectPrice;
+      existingProject.projectDiscount = projectDiscount;
+      existingProject.razorpaylink = razorpaylink;
       existingProject.youtubelink = youtubelink;
       existingProject.sourceCodelink = sourceCodelink;
     }

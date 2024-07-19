@@ -5,7 +5,63 @@ import { useSearchParams, useRouter } from "next/navigation";
 import Image from "next/image";
 import Link from "next/link";
 import { useSession } from "next-auth/react";
-import ProjectCard from "@/components/ProjectCard";
+import { FaDownload } from "react-icons/fa";
+import { FaShoppingCart } from "react-icons/fa";
+import RelatedProject from "@/components/RelatedProject";
+import { toast } from "react-toastify";
+
+//payment gateway
+// const handlePayment = async (amount, projectId) => {
+//   const res = await fetch("/api/order/create-order", {
+//     method: "POST",
+//     headers: {
+//       "Content-Type": "application/json",
+//     },
+//     body: JSON.stringify({ amount, currency: "INR" }),
+//   });
+
+//   const data = await res.json();
+
+//   const options = {
+//     key: process.env.NEXT_PUBLIC_RAZORPAY_KEY_ID,
+//     amount: data.amount,
+//     currency: data.currency,
+//     name: "Project With Mani",
+//     description: "Buy Code",
+//     order_id: data.id,
+//     handler: async (response) => {
+//       // Handle successful payment here
+//       console.log(response);
+//       // Redirect to success page or show Google Drive link
+//       const successResponse = await fetch(`/api/payment-success`, {
+//         method: "POST",
+//         headers: {
+//           "Content-Type": "application/json",
+//         },
+//         body: JSON.stringify({
+//           razorpay_payment_id: response.razorpay_payment_id,
+//           razorpay_order_id: response.razorpay_order_id,
+//           razorpay_signature: response.razorpay_signature,
+//           projectId,
+//         }),
+//       });
+
+//       const successData = await successResponse.json();
+//       alert(`Your Google Drive link: ${successData.driveLink}`);
+//     },
+//     prefill: {
+//       name: "Your Name",
+//       email: "your.email@example.com",
+//       contact: "9999999999",
+//     },
+//     theme: {
+//       color: "#F37254",
+//     },
+//   };
+
+//   const rzp = new window.Razorpay(options);
+//   rzp.open();
+// };
 
 const getYouTubeID = (url: string): string | null => {
   const regExp =
@@ -21,6 +77,8 @@ interface Project {
   category: string;
   content: string;
   projectPrice: number;
+  projectDiscount: number;
+  razorpaylink: string;
   thumbnailUrl: string;
   youtubelink: string;
   sourceCodelink: string;
@@ -34,7 +92,6 @@ const PageContent = () => {
 
   const [relatedProjects, setRelatedProjects] = useState<any[]>([]);
   const [category, setCategory] = useState<string>("");
-
   const [project, setProject] = useState({
     id: "",
     title: "",
@@ -42,6 +99,8 @@ const PageContent = () => {
     category: "",
     content: "",
     projectPrice: 0,
+    projectDiscount: 0,
+    razorpaylink: "",
     thumbnailUrl: "",
     youtubelink: "",
     sourceCodelink: "",
@@ -58,15 +117,22 @@ const PageContent = () => {
         category: data.category,
         content: data.content,
         projectPrice: data.projectPrice,
+        projectDiscount: data.projectDiscount,
+        razorpaylink: data.razorpaylink,
         thumbnailUrl: data.thumbnail.url,
         youtubelink: data.youtubelink,
-        sourceCodelink: data.sourceCodelink,
+        sourceCodelink: data.sourceCodelink || "",
       });
       setCategory(data.category);
     };
 
     if (projectId) getProjectDetails();
   }, [projectId]);
+
+  const finalPrice = Math.floor(
+    project.projectPrice -
+      (project.projectPrice * project.projectDiscount) / 100
+  );
 
   useEffect(() => {
     const getRelatedProjects = async () => {
@@ -86,18 +152,24 @@ const PageContent = () => {
     router.push(`/update-project?id=${project.id}`);
   };
 
+  const handleBuy = async () => {
+    router.push(`/buy?id=${project.id}`);
+  };
+
   const handleDelete = async (project: Project) => {
     const hasConfirmed = confirm(
-      "Are you sure you want to delete this prompt?"
+      "Are you sure you want to delete this project"
     );
 
     if (hasConfirmed) {
       try {
-        await fetch(`/api/project/${project.id.toString()}`, {
+        const response = await fetch(`/api/project/${project.id.toString()}`, {
           method: "DELETE",
         });
-
-        router.back();
+        if (response.ok) {
+          toast("Project deleted successfully");
+          router.back();
+        }
       } catch (error) {
         console.log(error);
       }
@@ -105,10 +177,10 @@ const PageContent = () => {
   };
 
   return (
-    <section className="paddings mx-auto w-full max-w-screen-2xl flex-col">
-      <div className="mb-4 mt-24  px-8 sm:px-14 md:px-20 lg:px-40 md:mb-0 w-full mx-auto relative">
+    <section className="py-8 mx-auto w-full max-w-screen-2xl flex-col overflow-hidden ">
+      <div className="mb-4 mt-24 px-4 sm:px-14 md:px-20 xl:px-40 2xl:px-56 w-full mx-auto relative">
         <div className="flex flex-col justify-center mb-12">
-          <h2 className="text-2xl sm:text-4xl font-semibold text-white-800 leading-tight">
+          <h2 className="text-2xl sm:text-4xl font-semibold text-gradient_purple-blue leading-tight">
             {project.title}
           </h2>
           <div className="flex items-center justify-center mt-8">
@@ -124,13 +196,13 @@ const PageContent = () => {
             <div className="flex justify-center items-center gap-2">
               <button
                 onClick={handleEdit}
-                className="bg-purple hover:bg-pink translation duration-500 text-white font-bold py-2 px-6 rounded my-8 active:scale-95"
+                className="bg-purple hover:bg-pink translation duration-500 text-white font-bold py-2 px-6 rounded mt-8 active:scale-95"
               >
                 Edit this project
               </button>
               <button
                 onClick={() => handleDelete(project)}
-                className="bg-purple hover:bg-pink translation duration-500 text-white font-bold py-2 px-6 rounded my-8 active:scale-95"
+                className="bg-purple hover:bg-pink translation duration-500 text-white font-bold py-2 px-6 rounded mt-8 active:scale-95"
               >
                 Delete this project
               </button>
@@ -139,7 +211,7 @@ const PageContent = () => {
         </div>
 
         <div className="flex-col justify-center mb-12">
-          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight text-gradient_purple-blue ">
+          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight">
             YouTube Tutorial:-
           </h2>
           <div className="flex justify-center mt-8 items-center rounded">
@@ -154,75 +226,55 @@ const PageContent = () => {
         </div>
 
         <div className="flex-col justify-center mb-8">
-          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight text-gradient_purple-blue ">
+          {/* <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight">
             Content:-
-          </h2>
+          </h2> */}
           <div
-            className=" p-1 sm:p-5 text-white blog-content"
+            className=" text-white blog-content"
             dangerouslySetInnerHTML={{ __html: project.content }}
           ></div>
         </div>
 
         <div className="flex-col justify-center items-center mb-8">
-          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight text-gradient_purple-blue ">
-            Code:-
+          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight">
+            Source Code:-
           </h2>
-          {/* <div className="flex flex-col justify-center items-center p-5 mt-4 rounded-lg  shadow-sm border hover:border-2 border-black-400"> */}
-          <div className="flex flex-col justify-start p-5">
-            <p className="text-white">Price: {project.projectPrice}</p>
-            <button className="bg-purple w-32 hover:bg-pink translation duration-500 text-white font-bold py-2 px-4 mt-2 rounded active:scale-95">
-              Buy Now
+          <div className="flex flex-col justify-center items-center mt-4">
+            <Link target="_blank" href={project.sourceCodelink}>
+              <button className="bg-purple w-40 hover:bg-pink transition duration-500 text-white font-bold py-2 px-4 mt-2 rounded active:scale-95 flex items-center justify-center gap-2">
+                <p>G Drive Link</p>
+                <FaDownload />
+              </button>
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex-col justify-center items-center mb-8">
+          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight">
+            Buy Complete Project:-
+          </h2>
+          <div className="flex flex-col justify-center items-center mt-4 sm:mt-6">
+            <p className="text-white font-semibold">
+              Project price: ₹ {project.projectPrice}
+            </p>
+            <p className="text-white font-semibold">
+              Project discount: {project.projectDiscount}%
+            </p>
+            <p className="text-white font-semibold">
+              Final Price: ₹ {finalPrice}
+            </p>
+            <button
+              onClick={handleBuy}
+              className="bg-purple w-40 hover:bg-pink transition duration-500 text-white font-bold py-2 px-4 mt-4 rounded active:scale-95 flex items-center justify-center gap-2"
+            >
+              <p>Buy Now</p>
+              <FaShoppingCart />
             </button>
           </div>
         </div>
       </div>
-      <div className="flex mx-5 flex-col justify-start">
-        <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight text-gradient_purple-blue ">
-          Related Post:-
-        </h2>
-        <div className="mt-6 flex flex-wrap justify-center gap-2 sm:justify-start">
-          {relatedProjects?.length > 1 ? (
-            relatedProjects
-              .filter(
-                (relatedProject: any) => relatedProject._id !== project.id
-              )
-              .slice(0, 3)
-              .map((project: any) => (
-                <ProjectCard
-                  key={project._id}
-                  id={project._id}
-                  title={project.title}
-                  summary={project.summary}
-                  content={project.content}
-                  category={project.category}
-                  imgUrl={project.thumbnail?.url}
-                  youtubeLink={project.youtubelink}
-                />
-              ))
-          ) : (
-            <p className="body-regular text-white-400">
-              No related projects found
-            </p>
-          )}
-        </div>
-      </div>
-      {/* <div className="mb-4 mt-10 px-40 md:mb-0 w-full mx-auto relative">
-        <div className="flex-col justify-center mb-12">
-          <h2 className="text-xl sm:text-3xl flex justify-start text-center font-semibold text-white-800 leading-tight text-gradient_purple-blue ">
-            Comments:-
-          </h2>
-          <div className="flex justify-center mt-8 items-center rounded">
-            <iframe
-              className=""
-              width="800"
-              height="450"
-              src="https://www.youtube.com/embed/KGZqndaJB4A?si=ghH4BL62uEoUfyb8"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          </div>
-        </div>
-      </div> */}
+
+      <RelatedProject relatedProjects={relatedProjects} projectId={projectId} />
     </section>
   );
 };

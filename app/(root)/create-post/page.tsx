@@ -1,7 +1,8 @@
 "use client";
 
-import React, { useState, FormEvent } from "react";
+import React, { useState, useEffect, FormEvent } from "react";
 import { useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import PostForm from "@/components/PostForm";
 
 interface Post {
@@ -20,6 +21,7 @@ interface Props {
 
 const page = () => {
   const router = useRouter();
+  const { data: session } = useSession();
 
   const [submitting, setSubmitting] = useState(false);
   const [post, setPost] = useState({
@@ -27,6 +29,14 @@ const page = () => {
     username: "",
     cover: {} as File,
   });
+
+  useEffect(() => {
+    // Redirect if not an admin
+    if (!session?.user?.isAdmin) {
+      router.push("/");
+      return;
+    }
+  }, [session, router]);
 
   const createPost = async (e: FormEvent) => {
     e.preventDefault();
@@ -73,15 +83,8 @@ const page = () => {
         });
 
         if (response.ok) {
-          const params = new URLSearchParams({
-            newPostTitle: post.title,
-            newPostUsername: post.username,
-            newPostImageUrl: imageUrl,
-            newPostImagePublicId: imagePublicId,
-          });
-
-          router.push(`/gallery?${params.toString()}`);
-          router.refresh(); // Force a re-fetch of the data
+          router.push("/gallery");
+          router.refresh();
         }
       }
     } catch (error) {

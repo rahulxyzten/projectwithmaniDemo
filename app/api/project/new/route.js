@@ -5,9 +5,11 @@ export const POST = async (req) => {
   const {
     title,
     summary,
-    content,
     category,
+    content,
     projectPrice,
+    projectDiscount,
+    razorpaylink,
     thumbnail,
     youtubelink,
     sourceCodelink,
@@ -18,9 +20,11 @@ export const POST = async (req) => {
     const newProject = new Project({
       title,
       summary,
-      content,
       category,
+      content,
       projectPrice,
+      projectDiscount,
+      razorpaylink,
       thumbnail: {
         public_id: thumbnail.public_id,
         url: thumbnail.url,
