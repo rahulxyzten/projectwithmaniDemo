@@ -11,7 +11,16 @@ export const POST = async (req) => {
     });
     await newCategory.save();
 
-    return new Response(JSON.stringify(newCategory), { status: 201 });
+    return new Response(JSON.stringify(newCategory), {
+      status: 201,
+      headers: {
+        "Cache-Control":
+          "no-store, no-cache, must-revalidate, proxy-revalidate",
+        Pragma: "no-cache",
+        Expires: "0",
+        "Surrogate-Control": "no-store",
+      },
+    });
   } catch (error) {
     return new Response("Failed to create a new category", { status: 500 });
   }

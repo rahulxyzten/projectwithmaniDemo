@@ -46,12 +46,22 @@ const page = () => {
     const fetchData = async () => {
       try {
         // Fetch admins
-        const adminsResponse = await fetch("/api/admin");
+        const adminsResponse = await fetch("/api/admin", {
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        });
         const adminsData = await adminsResponse.json();
         setAdmins(adminsData);
 
         // Fetch categories
-        const categoriesResponse = await fetch("/api/category");
+        const categoriesResponse = await fetch("/api/category", {
+          headers: {
+            "Cache-Control":
+              "no-store, no-cache, must-revalidate, proxy-revalidate",
+          },
+        });
         const categoriesData = await categoriesResponse.json();
         setCategories(categoriesData);
       } catch (error) {
