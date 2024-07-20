@@ -3,10 +3,10 @@ import Admin from "@/models/admin";
 
 // DELETE (delete)
 export const DELETE = async (request, { params }) => {
+  const { searchParams } = new URL(request.url);
   try {
     await connectToDB();
 
-    // Deleting project data from databse
     await Admin.deleteOne({ _id: params.id });
 
     return new Response("Admin deleted successfully", {
@@ -20,6 +20,7 @@ export const DELETE = async (request, { params }) => {
       },
     });
   } catch (error) {
+    console.error("Error deleting admin:", error);
     return new Response("Error deleting admin", { status: 500 });
   }
 };

@@ -2,6 +2,7 @@ import { connectToDB } from "@/utils/database";
 import Category from "@/models/category";
 
 export const POST = async (req) => {
+  const { searchParams } = new URL(req.url);
   const { categoryName } = await req.json();
 
   try {

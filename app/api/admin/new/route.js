@@ -2,6 +2,7 @@ import { connectToDB } from "@/utils/database";
 import Admin from "@/models/admin";
 
 export const POST = async (req) => {
+  const { searchParams } = new URL(req.url);
   const { email } = await req.json();
 
   try {
@@ -22,6 +23,7 @@ export const POST = async (req) => {
       },
     });
   } catch (error) {
+    console.error("Failed to create a new admin:", error);
     return new Response("Failed to create a new admin", { status: 500 });
   }
 };
