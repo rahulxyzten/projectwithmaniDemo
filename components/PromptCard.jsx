@@ -21,16 +21,9 @@ const PromptCard = ({ post, handleTagClick, handleEdit, handleDelete }) => {
   useEffect(() => {
     const checkUpvoteStatus = async () => {
       try {
-        if (session) {
-          const res = await fetch(`/api/prompt/${post._id}`);
-          if (res.ok) {
-            const promptData = await res.json();
-
-            if (promptData.upvoters.includes(session.user.id)) {
-              setUpvoted(true);
-            }
-          } else {
-            console.error("Failed to fetch prompt data");
+        if (session?.user) {
+          if (post.upvoters.includes(session.user.id)) {
+            setUpvoted(true);
           }
         }
       } catch (error) {
@@ -72,7 +65,6 @@ const PromptCard = ({ post, handleTagClick, handleEdit, handleDelete }) => {
 
       if (res.ok) {
         setUpvoted(!upvoted);
-        const res = await fetch(`/api/prompt/${post._id}`);
         const promptData = await res.json();
         SetVoteCount(promptData.upvotes);
       } else {
@@ -111,9 +103,7 @@ const PromptCard = ({ post, handleTagClick, handleEdit, handleDelete }) => {
             <p className="font-inter text-sm text-gray-500">
               {post.creator.email}
             </p>
-            <p className="font-inter text-xs text-gray-500">
-              {formattedDate}
-            </p>
+            <p className="font-inter text-xs text-gray-500">{formattedDate}</p>
           </div>
         </div>
       </div>
