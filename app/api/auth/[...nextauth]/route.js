@@ -1,9 +1,8 @@
 import NextAuth from "next-auth/next";
 import GoogleProvider from "next-auth/providers/google";
 
-import User from "@/models/user";
-import Admin from "@/models/admin";
-import { connectToDB } from "@/utils/database";
+import User from "@models/user";
+import { connectToDB } from "@utils/database";
 
 const handler = NextAuth({
   providers: [
@@ -15,26 +14,13 @@ const handler = NextAuth({
 
   callbacks: {
     async session({ session }) {
-      try {
-        await connectToDB();
-        const sessionUser = await User.findOne({
-          email: session.user.email,
-        });
+      const sessionUser = await User.findOne({
+        email: session.user.email,
+      });
 
-        if (sessionUser) {
-          session.user.id = sessionUser._id.toString();
-          const isAdmin = await Admin.findOne({
-            email: session.user.email,
-          });
+      session.user.id = sessionUser._id.toString();
 
-          session.user.isAdmin = !!isAdmin;
-        }
-
-        return session;
-      } catch (error) {
-        console.error("Error in session callback:", error);
-        return session;
-      }
+      return session;
     },
 
     async signIn({ profile }) {

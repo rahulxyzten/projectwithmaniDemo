@@ -1,23 +1,20 @@
-import "./globals.css";
-import Provider from "@/components/Provider";
-import SmoothScroll from "@/components/SmoothScroll";
-import { ToastContainer, toast } from "react-toastify";
-import "react-toastify/dist/ReactToastify.css";
+import "@styles/globals.css";
+import Provider from "@components/Provider";
 
 export const metadata = {
-  title: "Project With Mani",
-  description: "Project With Mani",
+  title: "Promptopia",
+  description: "Discover & Share AI Prompts",
 };
 
 const RootLayout = ({ children }) => {
   return (
     <html lang="en">
-      <body className="dark min-h-screen bg-black-100 font-poppins">
+      <body>
         <Provider>
-          {/* <SmoothScroll> */}
-            {children}
-            <ToastContainer/>
-          {/* </SmoothScroll> */}
+          <div className="main">
+            <div className="gradient" />
+          </div>
+          <main className="app">{children}</main>
         </Provider>
       </body>
     </html>
