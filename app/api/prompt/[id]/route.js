@@ -3,6 +3,7 @@ import Prompt from "@models/prompt";
 
 // GET (read)
 export const GET = async (request, { params }) => {
+  const { searchParams } = new URL(request.url);
   try {
     await connectToDB();
 
@@ -17,6 +18,7 @@ export const GET = async (request, { params }) => {
 
 // PATCH (update)
 export const PATCH = async (request, { params }) => {
+  const { searchParams } = new URL(request.url);
   const { prompt, description, tag, upvote, userid } = await request.json();
 
   try {
